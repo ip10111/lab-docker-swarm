@@ -9,23 +9,30 @@ COMPOSE_FILE="docker-compose.yml"
 
 # Function to display help message
 show_help() {
-    echo "Usage: $0 [-stack STACK_NAME] [-file SECRETS_FILE] [-compose COMPOSE_FILE]"
+    echo "Usage: $0 [-s STACK_NAME | --stack STACK_NAME] [-f SECRETS_FILE | --file SECRETS_FILE] [-dc COMPOSE_FILE | --compose COMPOSE_FILE] [-d | --default]"
     echo
     echo "Options:"
-    echo "  -stack    Name of the Docker stack (default: mystack)"
-    echo "  -file     Path to the secrets file (default: example-secret-list.txt)"
-    echo "  -compose  Path to the Docker Compose file (default: docker-compose.yml)"
-    echo "  -h        Display this help message"
+    echo "  -s, --stack      Name of the Docker stack (default: mystack)"
+    echo "  -f, --file       Path to the secrets file (default: example-secret-list.txt)"
+    echo "  -c, --compose    Path to the Docker Compose file (default: docker-compose.yml)"
+    echo "  -d, --default    Run with default configuration"
+    echo "  -h, --help       Display this help message"
     exit 0
 }
+
+# If no parameters are provided, show help
+if [ "$#" -eq 0 ]; then
+    show_help
+fi
 
 # Parse command-line arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        -stack) STACK_NAME="$2"; shift ;;
-        -file) SECRETS_FILE="$2"; shift ;;
-        -compose) COMPOSE_FILE="$2"; shift ;;
-        -h) show_help ;;
+        -s|--stack) STACK_NAME="$2"; shift ;;
+        -f|--file) SECRETS_FILE="$2"; shift ;;
+        -c|--compose) COMPOSE_FILE="$2"; shift ;;
+        -d|--default) ;;
+        -h|--help) show_help ;;
         *) echo "Unknown parameter passed: $1"; show_help ;;
     esac
     shift
