@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+    hello:
+        image: hello-world:latest
+        secrets:
+            - my_secret
+        environment:
+            SECRET_FILE: /run/secrets/my_secret
+
+secrets:
+    mysecret:
+        external: true
+    my_other_secret:
+        external: true
+    my_other_secrets:
+        external: true
