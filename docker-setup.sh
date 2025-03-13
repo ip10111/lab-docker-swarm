@@ -7,13 +7,26 @@ STACK_NAME="mystack"
 SECRETS_FILE="example-secret-list.txt"
 COMPOSE_FILE="docker-compose.yml"
 
+# Function to display help message
+show_help() {
+    echo "Usage: $0 [-stack STACK_NAME] [-file SECRETS_FILE] [-compose COMPOSE_FILE]"
+    echo
+    echo "Options:"
+    echo "  -stack    Name of the Docker stack (default: mystack)"
+    echo "  -file     Path to the secrets file (default: example-secret-list.txt)"
+    echo "  -compose  Path to the Docker Compose file (default: docker-compose.yml)"
+    echo "  -h        Display this help message"
+    exit 0
+}
+
 # Parse command-line arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         -stack) STACK_NAME="$2"; shift ;;
         -file) SECRETS_FILE="$2"; shift ;;
         -compose) COMPOSE_FILE="$2"; shift ;;
-        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+        -h) show_help ;;
+        *) echo "Unknown parameter passed: $1"; show_help ;;
     esac
     shift
 done
@@ -39,15 +52,23 @@ while IFS= read -r line || [ -n "$line" ]; do
 
     # Check if the secret already exists
     if docker secret ls | grep -q "$SECRET_NAME"; then
-        echo "Secret $SECRET_NAME already exists, skipping."
-    else
-        echo -n "$SECRET_VALUE" | docker secret create "$SECRET_NAME" -
+        echo "Secret $SECRET_NAME already exists. Updating secret..."
+        docker secret rm "$SECRET_NAME"
         if [ $? -eq 0 ]; then
-            echo "Secret $SECRET_NAME added successfully."
+            echo "Secret $SECRET_NAME removed successfully."
         else
-            echo "Failed to add secret $SECRET_NAME."
+            echo "Failed to remove secret $SECRET_NAME."
             exit 1
         fi
+    fi
+    
+    # Create (or recreate) the secret
+    echo -n "$SECRET_VALUE" | docker secret create "$SECRET_NAME" -
+    if [ $? -eq 0 ]; then
+        echo "Secret $SECRET_NAME added successfully."
+    else
+        echo "Failed to add secret $SECRET_NAME."
+        exit 1
     fi
 done < "$SECRETS_FILE"
 
